@@ -1,0 +1,54 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Sentiment Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube Sentiment Analysis</h1>
+        <form id="analyze-form" method="POST">
+            <input type="text" name="video_url" placeholder="Enter YouTube Video URL" required>
+            <button type="submit">Analyze</button>
+        </form>
+        
+        <!-- Loading Spinner -->
+        <div class="spinner" id="loading-spinner"></div>
+        
+        <!-- Results Section -->
+        <div id="results-section">
+            {% if results %}
+                <div class="results">
+                    <h2>Results for {{ results.total_comments }} Comments</h2>
+                    <h3>Sentiment Breakdown</h3>
+                    <img src="data:image/png;base64,{{ results.pie_chart }}" alt="Sentiment Breakdown">
+                    
+                    <h3>Word Cloud - Positive Comments</h3>
+                    <img src="data:image/png;base64,{{ results.positive_wordcloud }}" alt="Positive Word Cloud">
+                    
+                    <h3>Word Cloud - Negative Comments</h3>
+                    <img src="data:image/png;base64,{{ results.negative_wordcloud }}" alt="Negative Word Cloud">
+                </div>
+            {% elif error %}
+                <div class="error">
+                    <p>{{ error }}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to handle showing the loading spinner and clearing previous results
+        document.getElementById('analyze-form').onsubmit = function() {
+            // Clear previous results
+            document.getElementById('results-section').innerHTML = '';
+            
+            // Show loading spinner
+            document.getElementById('loading-spinner').style.display = 'block';
+        };
+    </script>
+</body>
+</html>
