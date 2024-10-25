@@ -5,7 +5,7 @@ from googleapiclient.discovery import build
 import pandas as pd
 import re
 import matplotlib
-matplotlib.use('Agg')  # Use a non-GUI backend suitable for web apps
+matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
@@ -18,15 +18,13 @@ import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 
-# Initialize Flask app
 app = Flask(__name__)
 
-# Initialize YouTube API
-API_KEY = 'AIzaSyAkGNZPX7RA9Gm9H5Bg8kpqu17Gc8yFxGQ'  # Replace with your actual API key
+# Initializing YouTube API
+API_KEY = 'INSERT API KEY HERE' 
 youtube = build('youtube', 'v3', developerKey=API_KEY)
 
 # Function to get comments from a video
-# Function to get comments from a video with a total limit
 def get_comments(video_id, max_results=100, total_limit=2000):
     comments = []
     response = youtube.commentThreads().list(
@@ -41,11 +39,10 @@ def get_comments(video_id, max_results=100, total_limit=2000):
             comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
             comments.append(comment)
             
-            # Stop if we've reached the total limit
             if len(comments) >= total_limit:
                 break
         
-        # Check if there are more comments
+        # Checking if there are more comments
         if 'nextPageToken' in response and len(comments) < total_limit:
             response = youtube.commentThreads().list(
                 part='snippet',
@@ -81,10 +78,10 @@ def get_sentiment(text):
     else:
         return -1  # Neutral
 
-# Generate sentiment analysis and visualizations
+# Generating sentiment analysis and visualizations
 def analyze_comments(video_id):
     try:
-        # Get comments
+        # Getting comments
         comments = get_comments(video_id, max_results=100, total_limit=2000)
         if not comments:
             return None
@@ -93,7 +90,7 @@ def analyze_comments(video_id):
         data['cleaned_text'] = data['comment_text'].apply(clean_text)
         data['sentiment'] = data['cleaned_text'].apply(get_sentiment)
 
-        # Remove neutral comments
+        # Removing neutral comments
         data = data[data['sentiment'] != -1]
 
         # Feature extraction using TF-IDF
@@ -101,7 +98,7 @@ def analyze_comments(video_id):
         X = tfidf.fit_transform(data['cleaned_text']).toarray()
         y = data['sentiment']
 
-        # Train the Logistic Regression model
+        # Training the Logistic Regression model
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         model = LogisticRegression()
         model.fit(X_train, y_train)
@@ -113,7 +110,7 @@ def analyze_comments(video_id):
         positive_percentage = (len(positive_comments) / total_comments) * 100
         negative_percentage = (len(negative_comments) / total_comments) * 100
 
-        # Generate Pie Chart
+        # Generating Pie Chart
         plt.figure(figsize=(8, 5))
         labels = ['Positive', 'Negative']
         sizes = [positive_percentage, negative_percentage]
@@ -121,21 +118,21 @@ def analyze_comments(video_id):
         plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140, colors=colors)
         plt.title('Sentiment Breakdown')
 
-        # Save pie chart to a string
+        # Saving pie chart to a string
         pie_buffer = BytesIO()
         plt.savefig(pie_buffer, format="png")
         pie_buffer.seek(0)
         pie_image = base64.b64encode(pie_buffer.getvalue()).decode()
         plt.close()
 
-        # Generate Word Clouds
+        # Generating Word Clouds
         positive_text = ' '.join(positive_comments['cleaned_text'].tolist())
         negative_text = ' '.join(negative_comments['cleaned_text'].tolist())
 
         wordcloud_positive = WordCloud(width=800, height=400, background_color='white').generate(positive_text)
         wordcloud_negative = WordCloud(width=800, height=400, background_color='white', colormap='Reds').generate(negative_text)
 
-        # Save word cloud images to strings
+        # Saving word cloud images to strings
         wc_positive_buffer = BytesIO()
         plt.figure(figsize=(10, 5))
         plt.imshow(wordcloud_positive, interpolation='bilinear')
@@ -174,7 +171,7 @@ def analyze_comments(video_id):
 def index():
     if request.method == 'POST':
         video_url = request.form['video_url']
-        # Extract video ID from YouTube URL
+        # Extracting video ID from YouTube URL
         if 'v=' in video_url:
             video_id = video_url.split('v=')[-1]
         else:
@@ -188,6 +185,6 @@ def index():
 
     return render_template('index.html')
 
-# Run the app
+# Running the app
 if __name__ == "__main__":
     app.run(debug=True)
